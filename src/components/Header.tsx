@@ -2,7 +2,11 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 
-const Header = () => {
+interface HeaderProps {
+  onDemoClick?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onDemoClick }) => {
   return (
     <header className="fixed top-0 w-full z-50 glass-effect">
       <div className="container mx-auto px-6 py-4">
@@ -21,8 +25,11 @@ const Header = () => {
             <a href="#contato" className="text-white hover:text-purple-300 transition-colors">Contato</a>
           </div>
           
-          <Button className="gradient-pink text-white border-0 hover:opacity-90 transition-opacity">
-            Começar Agora
+          <Button 
+            onClick={onDemoClick}
+            className="gradient-pink text-white border-0 hover:opacity-90 transition-opacity"
+          >
+            Testar Demo
           </Button>
         </nav>
       </div>

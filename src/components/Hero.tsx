@@ -3,7 +3,11 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-const Hero = () => {
+interface HeroProps {
+  onDemoClick?: () => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ onDemoClick }) => {
   return (
     <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
       <div className="absolute inset-0 gradient-purple opacity-90"></div>
@@ -33,8 +37,12 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="gradient-pink text-white border-0 hover:opacity-90 transition-all hover:scale-105 px-8 py-4 text-lg">
-            ✨ Criar Meu Agente
+          <Button 
+            size="lg" 
+            onClick={onDemoClick}
+            className="gradient-pink text-white border-0 hover:opacity-90 transition-all hover:scale-105 px-8 py-4 text-lg"
+          >
+            ✨ Testar Demo
           </Button>
           <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-black transition-all px-8 py-4 text-lg">
             Ver Demonstração
