@@ -12,10 +12,11 @@ const Demo = () => {
   const [accessCode, setAccessCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [agentPrompt, setAgentPrompt] = useState('');
-  const [agentName, setAgentName] = useState('');
-  const [webhookUrl, setWebhookUrl] = useState('');
+  const [agentData, setAgentData] = useState({ prompt: '', agentName: '', company: '' });
   const { toast } = useToast();
+
+  // URL do webhook N8n integrado com Supabase
+  const webhookUrl = 'https://nwh.hisaas.com.br/webhook/fe36e288-b07c-4f79-a79e-a9580d3c558d/chat';
 
   const handleLogin = async () => {
     if (!accessCode.trim()) {
@@ -27,17 +28,8 @@ const Demo = () => {
       return;
     }
 
-    if (!webhookUrl.trim()) {
-      toast({
-        title: "Configuração Necessária",
-        description: "Por favor, configure a URL do webhook do n8n primeiro",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
-    console.log("Iniciando teste com código:", accessCode);
+    console.log("Validando código:", accessCode);
 
     try {
       const response = await fetch(webhookUrl, {
@@ -47,21 +39,24 @@ const Demo = () => {
         },
         body: JSON.stringify({
           accessCode: accessCode,
-          action: 'getAgentPrompt'
+          action: 'validateAccess'
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
         
-        if (data.prompt && data.agentName) {
-          setAgentPrompt(data.prompt);
-          setAgentName(data.agentName);
+        if (data.valid && data.prompt && data.agentName) {
+          setAgentData({
+            prompt: data.prompt,
+            agentName: data.agentName,
+            company: data.company || 'Empresa'
+          });
           setIsAuthenticated(true);
           
           toast({
             title: "Acesso Liberado",
-            description: `Agente ${data.agentName} carregado com sucesso!`,
+            description: `Bem-vindo ao teste do agente ${data.agentName}!`,
           });
         } else {
           toast({
@@ -74,10 +69,10 @@ const Demo = () => {
         throw new Error('Falha na autenticação');
       }
     } catch (error) {
-      console.error("Erro ao autenticar:", error);
+      console.error("Erro ao validar código:", error);
       toast({
         title: "Erro de Conexão",
-        description: "Não foi possível conectar ao servidor. Verifique a URL do webhook.",
+        description: "Não foi possível conectar ao servidor. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -94,8 +89,9 @@ const Demo = () => {
   if (isAuthenticated) {
     return (
       <ChatInterface 
-        agentPrompt={agentPrompt} 
-        agentName={agentName}
+        agentPrompt={agentData.prompt} 
+        agentName={agentData.agentName}
+        company={agentData.company}
         onBack={() => setIsAuthenticated(false)}
       />
     );
@@ -112,11 +108,11 @@ const Demo = () => {
             
             <CardTitle className="text-2xl font-bold mb-2">Bem-vindo</CardTitle>
             <CardDescription className="text-purple-300 text-lg font-semibold mb-4">
-              Empresa
+              Teste de Agente IA
             </CardDescription>
             
             <p className="text-gray-400 text-sm leading-relaxed">
-              Este é um ambiente para testar o script da IA personalizado para sua empresa.
+              Digite seu código de acesso para testar o agente de IA personalizado.
             </p>
             
             <Badge className="gradient-purple text-white border-0 mt-4 mx-auto">
@@ -127,21 +123,6 @@ const Demo = () => {
           <CardContent className="space-y-6">
             <div className="space-y-4">
               <div>
-                <label htmlFor="webhook" className="flex items-center text-sm font-medium text-gray-300 mb-2">
-                  <Shield className="w-4 h-4 mr-2" />
-                  URL do Webhook N8N
-                </label>
-                <Input
-                  id="webhook"
-                  type="url"
-                  placeholder="https://seu-webhook-n8n.com/webhook/..."
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  className="bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-                />
-              </div>
-              
-              <div>
                 <label htmlFor="accessCode" className="flex items-center text-sm font-medium text-gray-300 mb-2">
                   <Lock className="w-4 h-4 mr-2" />
                   Código de Acesso
@@ -149,7 +130,7 @@ const Demo = () => {
                 <Input
                   id="accessCode"
                   type="password"
-                  placeholder="Digite o código fornecido"
+                  placeholder="Digite seu código de acesso"
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value)}
                   onKeyPress={handleKeyPress}
@@ -163,7 +144,7 @@ const Demo = () => {
               disabled={isLoading}
               className="w-full gradient-pink text-white border-0 hover:opacity-90 transition-opacity py-3 text-lg"
             >
-              {isLoading ? "🔄 Carregando..." : "🚀 Iniciar Teste"}
+              {isLoading ? "🔄 Validando..." : "🚀 Iniciar Teste"}
             </Button>
             
             <div className="text-center pt-4">
